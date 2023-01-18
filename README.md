@@ -1,6 +1,6 @@
 # react-native-twilio
 
-twilio call
+twilio call provider
 
 ## Installation
 

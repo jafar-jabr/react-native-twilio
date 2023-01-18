@@ -20,14 +20,12 @@
             android:layout_height="wrap_content"
             android:textColor="?android:attr/textColorSecondary" />
 
-      <EditText
-        android:id="@android:id/edit"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="@string/app_name"
-        android:inputType="number"
-        android:minHeight="48dp"
-        tools:ignore="Autofill,LabelFor" />
+        <EditText
+            android:id="@android:id/edit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            tools:ignore="Autofill,LabelFor" />
 
     </LinearLayout>
 

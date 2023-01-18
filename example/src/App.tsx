@@ -1,188 +1,225 @@
 import * as React from 'react';
 
-import { StyleSheet, View } from 'react-native';
-import TwilioView, { EventType, twilioEmitter } from 'react-native-twilio';
+import {
+  Button,
+  PermissionsAndroid,
+  Platform,
+  TextInput,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import {
+  TwilioVideo,
+  TwilioVideoLocalView,
+  TwilioVideoParticipantView,
+} from 'react-native-twilio';
+import { useRef, useState } from 'react';
+import styles from './styles';
 
 export default function App() {
-  const token ="eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiIsImN0eSI6InR3aWxpby1mcGE7dj0xIn0.eyJqdGkiOiJTSzdkNGI0NWZmYzU0OWQ2MjQ3ZmI1OGMwNmM3ZTdiMmU3LTE2NzMzNzg1NjMiLCJpc3MiOiJTSzdkNGI0NWZmYzU0OWQ2MjQ3ZmI1OGMwNmM3ZTdiMmU3Iiwic3ViIjoiQUNjNzc1OTc1ZTA3MDlkNTQ3OGFiN2Q2OTY2YjA0ODZkOCIsImV4cCI6MTY3MzM4MjE2MywiZ3JhbnRzIjp7ImlkZW50aXR5IjoidXNlcjQiLCJ2aWRlbyI6eyJyb29tIjoibXJvb20ifX19.Y2zHAHWO3AaIzaIvnn_wct50-muHNdgqG15IWorNm48";
-  TwilioView.initialize(token);
-  React.useEffect(() => {
-    const subscriptions = [
-      twilioEmitter.addListener(EventType.ON_CONNECTED, (data) => {
-        console.log('ON_CONNECTED');
-        console.log(data);
-      }),
-      twilioEmitter.addListener(EventType.ON_RE_CONNECTED, (data) => {
-        console.log('ON_RE_CONNECTED');
-        console.log(data);
-      }),
-      twilioEmitter.addListener(EventType.ON_DISCONNECTED, (data) => {
-        console.log('ON_DISCONNECTED');
-        console.log(data);
-      }),
-      twilioEmitter.addListener(EventType.ON_CONNECT_FAILURE, (data) => {
-        console.log('ON_CONNECT_FAILURE');
-        console.log(data);
-      }),
+  const [isAudioEnabled, setIsAudioEnabled] = useState(true);
+  const [isVideoEnabled, setIsVideoEnabled] = useState(true);
+  const [isSharing, setIsSharing] = useState(false);
+  const [isScreenShareEnabled, setIsScreenShareEnabled] = useState(false);
+  const [status, setStatus] = useState('disconnected');
+  const [participants, setParticipants] = useState(new Map());
+  const [videoTracks, setVideoTracks] = useState(new Map());
+  const [token, setToken] = useState('');
+  const twilioVideo = useRef(null);
 
-      twilioEmitter.addListener(
-        EventType.ON_FRAME_DIMENSIONS_CHANGED,
-        (data) => {
-          console.log('ON_FRAME_DIMENSIONS_CHANGED');
-          console.log(data);
-        }
-      ),
-      twilioEmitter.addListener(EventType.ON_CAMERA_SWITCHED, (data) => {
-        console.log('ON_CAMERA_SWITCHED');
-        console.log(data);
-      }),
-      twilioEmitter.addListener(EventType.ON_VIDEO_CHANGED, (data) => {
-        console.log('ON_VIDEO_CHANGED');
-        console.log(data);
-      }),
-      twilioEmitter.addListener(EventType.ON_AUDIO_CHANGED, (data) => {
-        console.log('ON_AUDIO_CHANGED');
-        console.log(data);
-      }),
+  const _onConnectButtonPress = async () => {
+    if (Platform.OS === 'android') {
+      await _requestAudioPermission();
+      await _requestCameraPermission();
+    }
+    twilioVideo.current.connect({
+      accessToken: token,
+      enableNetworkQualityReporting: true,
+      dominantSpeakerEnabled: true,
+    });
+    setStatus('connecting');
+  };
 
-      ////
-      twilioEmitter.addListener(EventType.ON_PARTICIPANT_CONNECTED, (data) => {
-        console.log('ON_PARTICIPANT_CONNECTED');
-        console.log(data);
-      }),
-      twilioEmitter.addListener(
-        EventType.ON_PARTICIPANT_RECONNECTED,
-        (data) => {
-          console.log('ON_PARTICIPANT_RECONNECTED');
-          console.log(data);
-        }
-      ),
-      twilioEmitter.addListener(
-        EventType.ON_PARTICIPANT_DISCONNECTED,
-        (data) => {
-          console.log('ON_PARTICIPANT_DISCONNECTED');
-          console.log(data);
-        }
-      ),
-      twilioEmitter.addListener(
-        EventType.ON_DATATRACK_MESSAGE_RECEIVED,
-        (data) => {
-          console.log('ON_DATATRACK_MESSAGE_RECEIVED');
-          console.log(data);
-        }
-      ), ///
-      twilioEmitter.addListener(
-        EventType.ON_PARTICIPANT_ADDED_DATA_TRACK,
-        (data) => {
-          console.log('ON_PARTICIPANT_ADDED_DATA_TRACK');
-          console.log(data);
-        }
-      ),
-      twilioEmitter.addListener(
-        EventType.ON_PARTICIPANT_REMOVED_DATA_TRACK,
-        (data) => {
-          console.log('ON_PARTICIPANT_REMOVED_DATA_TRACK');
-          console.log(data);
-        }
-      ),
-      twilioEmitter.addListener(
-        EventType.ON_PARTICIPANT_ADDED_VIDEO_TRACK,
-        (data) => {
-          console.log('ON_PARTICIPANT_ADDED_VIDEO_TRACK');
-          console.log(data);
-        }
-      ),
-      twilioEmitter.addListener(
-        EventType.ON_PARTICIPANT_REMOVED_VIDEO_TRACK,
-        (data) => {
-          console.log('ON_PARTICIPANT_REMOVED_VIDEO_TRACK');
-          console.log(data);
-        }
-      ),
+  const _onEndButtonPress = () => {
+    twilioVideo.current.disconnect();
+  };
 
-      ////
-      twilioEmitter.addListener(
-        EventType.ON_PARTICIPANT_ADDED_AUDIO_TRACK,
-        (data) => {
-          console.log('ON_PARTICIPANT_ADDED_AUDIO_TRACK');
-          console.log(data);
-        }
-      ),
-      twilioEmitter.addListener(
-        EventType.ON_PARTICIPANT_REMOVED_AUDIO_TRACK,
-        (data) => {
-          console.log('ON_PARTICIPANT_REMOVED_AUDIO_TRACK');
-          console.log(data);
-        }
-      ),
-      twilioEmitter.addListener(
-        EventType.ON_PARTICIPANT_ENABLED_VIDEO_TRACK,
-        (data) => {
-          console.log('ON_PARTICIPANT_ENABLED_VIDEO_TRACK');
-          console.log(data);
-        }
-      ),
-      twilioEmitter.addListener(
-        EventType.ON_PARTICIPANT_DISABLED_VIDEO_TRACK,
-        (data) => {
-          console.log('ON_PARTICIPANT_DISABLED_VIDEO_TRACK');
-          console.log(data);
-        }
-      ), ///
-      twilioEmitter.addListener(
-        EventType.ON_PARTICIPANT_ENABLED_AUDIO_TRACK,
-        (data) => {
-          console.log('ON_PARTICIPANT_ENABLED_AUDIO_TRACK');
-          console.log(data);
-        }
-      ),
-      twilioEmitter.addListener(
-        EventType.ON_PARTICIPANT_DISABLED_AUDIO_TRACK,
-        (data) => {
-          console.log('ON_PARTICIPANT_DISABLED_AUDIO_TRACK');
-          console.log(data);
-        }
-      ),
-      twilioEmitter.addListener(EventType.ON_STATS_RECEIVED, (data) => {
-        console.log('ON_STATS_RECEIVED');
-        console.log(data);
-      }),
-      twilioEmitter.addListener(
-        EventType.ON_NETWORK_QUALITY_LEVELS_CHANGED,
-        (data) => {
-          console.log('ON_NETWORK_QUALITY_LEVELS_CHANGED');
-          console.log(data);
-        }
-      ),
-    ];
+  const _onMuteButtonPress = () => {
+    twilioVideo.current
+      .setLocalAudioEnabled(!isAudioEnabled)
+      .then((isEnabled) => setIsAudioEnabled(isEnabled));
+  };
 
-    return () => {
-      subscriptions.map((subscription) => {
-        subscription.remove();
-      });
-    };
-  }, []);
+  const _onShareButtonPressed = () => {
+    twilioVideo.current.toggleScreenSharing(!isSharing);
+    setIsSharing(!isSharing);
+  };
+
+  const _onFlipButtonPress = () => {
+    twilioVideo.current.flipCamera();
+  };
+
+  const _onRoomDidConnect = () => {
+    setStatus('connected');
+  };
+
+  const _onRoomDidDisconnect = ({ error }) => {
+    console.log('ERROR: ', error);
+
+    setStatus('disconnected');
+  };
+
+  const _onRoomDidFailToConnect = (error) => {
+    console.log('ERROR: ', error);
+
+    setStatus('disconnected');
+  };
+
+  const _onParticipantAddedVideoTrack = ({ participant, track }) => {
+    console.log('onParticipantAddedVideoTrack: ', participant, track);
+
+    setVideoTracks(
+      new Map([
+        ...videoTracks,
+        [
+          track.trackSid,
+          { participantSid: participant.sid, videoTrackSid: track.trackSid },
+        ],
+      ])
+    );
+  };
+
+  const _onParticipantRemovedVideoTrack = ({ participant, track }) => {
+    console.log('onParticipantRemovedVideoTrack: ', participant, track);
+
+    const newVideoTracks = new Map(videoTracks);
+    newVideoTracks.delete(track.trackSid);
+
+    setVideoTracks(newVideoTracks);
+  };
+
+  const _onNetworkLevelChanged = ({ participant, isLocalUser, quality }) => {
+    console.log(
+      'Participant',
+      participant,
+      'isLocalUser',
+      isLocalUser,
+      'quality',
+      quality
+    );
+  };
+
+  const _onDominantSpeakerDidChange = ({ roomName, roomSid, participant }) => {
+    console.log(
+      'onDominantSpeakerDidChange',
+      `roomName: ${roomName}`,
+      `roomSid: ${roomSid}`,
+      'participant:',
+      participant
+    );
+  };
+
+  const _requestAudioPermission = () => {
+    return PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+      {
+        title: 'Need permission to access microphone',
+        message:
+          'To run this demo we need permission to access your microphone',
+        buttonNegative: 'Cancel',
+        buttonPositive: 'OK',
+      }
+    );
+  };
+
+  const _requestCameraPermission = () => {
+    return PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.CAMERA, {
+      title: 'Need permission to access camera',
+      message: 'To run this demo we need permission to access your camera',
+      buttonNegative: 'Cancel',
+      buttonPositive: 'OK',
+    });
+  };
 
   return (
     <View style={styles.container}>
-      <TwilioView
-        src={{ roomName: 'mroom' }}
-        //trackSid={null}
-        style={styles.box}
+      {status === 'disconnected' && (
+        <View>
+          <Text style={styles.welcome}>React Native Twilio Video</Text>
+          <TextInput
+            style={styles.input}
+            autoCapitalize="none"
+            value={token}
+            onChangeText={(text) => setToken(text)}
+          />
+          <Button
+            title="Connect"
+            style={styles.button}
+            onPress={_onConnectButtonPress}
+          />
+        </View>
+      )}
+
+      {(status === 'connected' || status === 'connecting') && (
+        <View style={styles.callContainer}>
+          {status === 'connected' && (
+            <View style={styles.remoteGrid}>
+              {Array.from(videoTracks, ([trackSid, trackIdentifier]) => {
+                return (
+                  <TwilioVideoParticipantView
+                    style={styles.remoteVideo}
+                    key={trackSid}
+                    trackIdentifier={trackIdentifier}
+                  />
+                );
+              })}
+            </View>
+          )}
+          <View style={styles.optionsContainer}>
+            <TouchableOpacity
+              style={styles.optionButton}
+              onPress={_onEndButtonPress}
+            >
+              <Text style={{ fontSize: 12 }}>End</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.optionButton}
+              onPress={_onMuteButtonPress}
+            >
+              <Text style={{ fontSize: 12 }}>
+                {isAudioEnabled ? 'Mute' : 'Unmute'}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.optionButton}
+              onPress={_onFlipButtonPress}
+            >
+              <Text style={{ fontSize: 12 }}>Flip</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.optionButton}
+              onPress={_onShareButtonPressed}
+            >
+              <Text style={{ fontSize: 12 }}>
+                {isSharing ? 'Stop Sharing' : 'Start Sharing'}
+              </Text>
+            </TouchableOpacity>
+            <TwilioVideoLocalView enabled={true} style={styles.localVideo} />
+          </View>
+        </View>
+      )}
+
+      <TwilioVideo
+        ref={twilioVideo}
+        onRoomDidConnect={_onRoomDidConnect}
+        onRoomDidDisconnect={_onRoomDidDisconnect}
+        onRoomDidFailToConnect={_onRoomDidFailToConnect}
+        onParticipantAddedVideoTrack={_onParticipantAddedVideoTrack}
+        onParticipantRemovedVideoTrack={_onParticipantRemovedVideoTrack}
+        onNetworkQualityLevelsChanged={_onNetworkLevelChanged}
+        onDominantSpeakerDidChange={_onDominantSpeakerDidChange}
       />
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  box: {
-    width: '100%',
-    height: '100%',
-    marginVertical: 20,
-  },
-});
