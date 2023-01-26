@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout
+  xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  xmlns:tools="http://schemas.android.com/tools"
+  android:layout_width="match_parent"
+  android:background="@android:color/white"
+  android:layout_height="match_parent">
+
+  <FrameLayout
+    android:id="@+id/videos"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_gravity="bottom">
+    <com.twilio.video.VideoView
+      android:id="@+id/thumbnailVideoView"
+      android:layout_width="120dp"
+      android:layout_height="120dp"
+      android:elevation="2dp"
+      android:layout_marginTop="48dp"
+      android:layout_marginEnd="24dp"
+      android:layout_gravity="end"
+      app:tviMirror="true"
+      android:focusable="true"
+      app:tviOverlaySurface="true"
+      android:visibility="visible" />
+    <LinearLayout
+      android:id="@+id/thumbnailPlaceHolderView"
+      android:layout_width="120dp"
+      android:layout_height="120dp"
+      android:layout_marginTop="48dp"
+      android:layout_marginEnd="24dp"
+      android:elevation="4dp"
+      android:visibility="invisible"
+      android:layout_gravity="end"
+      android:showDividers="middle"
+      android:background="@android:color/darker_gray"
+      android:gravity="center"
+      android:orientation="vertical">
+      <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/thumbnailPlaceHolderText"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/baseline_videocam_off_24"
+        android:layout_marginTop="3dp"
+        android:gravity="center"
+        android:text="No Preview"
+        android:textAppearance="@android:style/TextAppearance.DeviceDefault"
+        android:textSize="16sp"
+        tools:ignore="HardcodedText" />
+    </LinearLayout>
+    <com.twilio.video.VideoView
+      android:id="@+id/primaryVideoView"
+      app:tviMirror="true"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:layout_gravity="center"/>
+    <ImageView
+      android:id="@+id/remotePlaceHolderImageView"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:visibility="invisible"
+      android:adjustViewBounds="true"
+      android:padding="32dp"
+      android:layout_gravity="center"
+      android:src="@drawable/baseline_videocam_off_24" />
+    <LinearLayout
+      android:id="@+id/placeHolderView"
+      android:layout_width="match_parent"
+      android:background="@android:color/white"
+      android:orientation="vertical"
+      android:gravity="center"
+      android:layout_height="match_parent">
+      <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/remotePlacecHolderTextView"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="3dp"
+        android:gravity="center_vertical|center_horizontal"
+        android:text="No Preview"
+        android:textAppearance="@android:style/TextAppearance.DeviceDefault"
+        android:textSize="24sp"
+        tools:ignore="HardcodedText" />
+    </LinearLayout>
+    <ProgressBar
+      android:id="@+id/reconnectingProgressBar"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_gravity="center"
+      android:indeterminate="true"
+      style="?android:attr/progressBarStyleLarge"
+      android:visibility="gone" />
+
+  </FrameLayout>
+</FrameLayout>
